@@ -1,0 +1,182 @@
+name: Knight Nightly
+
+# Rebuilds this fork's Knight app on top of upstream T3 Code and publishes it as a
+# nightly prerelease. Installed builds update from these releases through the app's
+# own nightly channel, so each one must be signed with the same identity.
+on:
+  schedule:
+    # Avoid minute zero, when GitHub scheduled jobs are busiest.
+    - cron: "41 3 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Build even when neither upstream nor this branch changed
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: knight-nightly
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    if: github.repository != 'pingdotgg/t3code'
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      UPSTREAM_URL: https://github.com/pingdotgg/t3code.git
+    steps:
+      # Same checkout as release-desktop.yml: actions/checkout's submodule cleanup
+      # fails on the orphaned gitlinks in the vendored .repos tree.
+      - name: Checkout
+        shell: bash
+        env:
+          GIT_TERMINAL_PROMPT: "0"
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          git remote add upstream "$UPSTREAM_URL"
+          git fetch --no-tags --filter=blob:none origin "$GITHUB_REF_NAME"
+          git fetch --no-tags --filter=blob:none upstream main
+          git sparse-checkout set --no-cone '/*' '!/.repos/'
+          git -c checkout.workers=0 checkout -B knight "origin/$GITHUB_REF_NAME"
+          echo "KNIGHT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "UPSTREAM_SHA=$(git rev-parse upstream/main)" >> "$GITHUB_ENV"
+
+      - name: Skip when nothing changed
+        id: changed
+        shell: bash
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          set -euo pipefail
+          marker="knight=${KNIGHT_SHA} upstream=${UPSTREAM_SHA}"
+          echo "marker=$marker" >> "$GITHUB_OUTPUT"
+          last="$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName --jq '.[0].tagName // ""')"
+          if [[ "$FORCE" != "true" && -n "$last" ]] \
+            && gh release view "$last" --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -qF "$marker"; then
+            echo "Release $last already holds $marker."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Rebasing here, not on the branch, keeps the default token out of pushes it
+      # cannot make: upstream commits often touch workflow files.
+      - name: Rebase onto upstream
+        if: steps.changed.outputs.build == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "knight-nightly"
+          git config user.email "knight-nightly@users.noreply.github.com"
+          if ! git rebase upstream/main; then
+            conflicts="$(git diff --name-only --diff-filter=U | sed 's/^/- `/; s/$/`/')"
+            git rebase --abort
+            title="Knight nightly: rebase onto upstream conflicts"
+            body="$(printf 'The nightly could not replay this branch onto upstream %s.\n\nConflicting files:\n%s\n\nRebase locally, push the branch, then run the workflow again. Installed apps stay on the last good nightly.\n\nRun: %s/%s/actions/runs/%s' \
+              "$UPSTREAM_SHA" "$conflicts" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")"
+            existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // ""')"
+            if [[ -n "$existing" ]]; then
+              gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+            fi
+            echo "::error::Rebase onto upstream $UPSTREAM_SHA conflicts; see the issue."
+            exit 1
+          fi
+
+      - name: Setup dependencies
+        if: steps.changed.outputs.build == 'true'
+        uses: ./.github/actions/setup-ci-deps
+        with:
+          install-args: --filter=@t3tools/desktop... --filter=t3... --filter=@t3tools/scripts...
+
+      - name: Resolve version
+        if: steps.changed.outputs.build == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$(jq -r .version apps/desktop/package.json)"
+          # The -nightly.<date>.<n> shape is what the app reads as its nightly channel.
+          version="${base}-nightly.$(date -u +%Y%m%d).${GITHUB_RUN_NUMBER}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          node scripts/update-release-package-versions.ts "$version"
+
+      # electron-builder signs only with an identity macOS lists as valid, so the
+      # self-signed certificate is trusted for code signing on this runner only.
+      - name: Install signing identity
+        if: steps.changed.outputs.build == 'true'
+        shell: bash
+        env:
+          P12_BASE64: ${{ secrets.MACOS_SELF_SIGNED_P12 }}
+          P12_PASSWORD: ${{ secrets.MACOS_SELF_SIGNED_P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$P12_BASE64" || -z "$P12_PASSWORD" ]]; then
+            echo "::error::Set MACOS_SELF_SIGNED_P12 and MACOS_SELF_SIGNED_P12_PASSWORD; unsigned nightlies cannot update installed apps."
+            exit 1
+          fi
+          p12="$RUNNER_TEMP/signing.p12"
+          printf '%s' "$P12_BASE64" | base64 --decode > "$p12"
+          openssl pkcs12 -in "$p12" -nokeys -clcerts -passin "pass:$P12_PASSWORD" -legacy -out "$RUNNER_TEMP/signing.pem" 2>/dev/null \
+            || openssl pkcs12 -in "$p12" -nokeys -clcerts -passin "pass:$P12_PASSWORD" -out "$RUNNER_TEMP/signing.pem"
+          sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$RUNNER_TEMP/signing.pem"
+          echo "CSC_LINK=$p12" >> "$GITHUB_ENV"
+          echo "CSC_KEY_PASSWORD=$P12_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Build
+        if: steps.changed.outputs.build == 'true'
+        shell: bash
+        env:
+          T3CODE_DESKTOP_SIGNED: "true"
+          T3CODE_MACOS_SELF_SIGNED: "true"
+          T3CODE_DESKTOP_UPDATE_REPOSITORY: ${{ github.repository }}
+        run: node scripts/build-desktop-artifact.ts --platform mac --target dmg --arch arm64 --build-version "$VERSION"
+
+      - name: Verify signature
+        if: steps.changed.outputs.build == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="$(mktemp -d)"
+          ditto -x -k release/*-arm64.zip "$app"
+          bundle="$(find "$app" -maxdepth 1 -name '*.app' | head -1)"
+          codesign --verify --deep --strict "$bundle"
+          # Authority lines print only from -dvv up. Captured first: grep -q exits on the
+          # first match, and a pipe from codesign would then fail under pipefail.
+          info="$(codesign -dvv "$bundle" 2>&1)"
+          echo "$info"
+          grep -qx "Authority=T3 Code Knight" <<<"$info"
+          # Updates install only when the new build satisfies this, so it must pin the certificate.
+          requirement="$(codesign -d -r- "$bundle" 2>&1)"
+          echo "$requirement"
+          grep -q 'certificate root = H"' <<<"$requirement"
+          ls release/nightly-mac.yml
+
+      - name: Publish
+        if: steps.changed.outputs.build == 'true'
+        shell: bash
+        env:
+          MARKER: ${{ steps.changed.outputs.marker }}
+        run: |
+          set -euo pipefail
+          notes="$(printf 'Knight build of T3 Code on upstream %s.\n\n%s' "${UPSTREAM_SHA:0:10}" "$MARKER")"
+          gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --prerelease \
+            --target "$KNIGHT_SHA" --title "Knight nightly $VERSION" --notes "$notes" \
+            release/*.dmg release/*.zip release/*.blockmap release/nightly-mac.yml
+
+      # Keeps the release list small; the updater only reads the newest nightly.
+      - name: Prune old nightlies
+        if: steps.changed.outputs.build == 'true'
+        shell: bash
+        run: |
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,isPrerelease \
+            --jq '[.[] | select(.isPrerelease and (.tagName | test("-nightly\\.")))][5:][].tagName' \
+            | while read -r tag; do gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes; done

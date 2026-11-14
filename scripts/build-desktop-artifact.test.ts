@@ -39,6 +39,7 @@ import {
   packWindowsServerAsar,
   preflightWindowsDesktopBuild,
   renderMacPasskeyEntitlements,
+  renderMacSelfSignedEntitlements,
   resolveMacFileExclusions,
   resolveMacWebAuthnEntitlements,
   resolveMacPasskeySigningConfiguration,
@@ -1595,6 +1596,19 @@ it.layer(NodeServices.layer)("build-desktop-artifact", (it) => {
     assert.match(entitlements, /<key>com\.apple\.security\.device\.audio-input<\/key>\s*<true\/>/u);
     assert.notInclude(entitlements, "keychain-access-groups");
     assert.notInclude(entitlements, "com.apple.developer.web-browser.public-key-credential");
+  });
+
+  it("keeps self-signed macOS entitlements to the ones that need no provisioning profile", () => {
+    const entitlements = renderMacSelfSignedEntitlements();
+
+    assert.include(entitlements, "<key>com.apple.security.cs.allow-jit</key>");
+    assert.match(entitlements, /<key>com\.apple\.security\.device\.camera<\/key>\s*<true\/>/u);
+    assert.match(entitlements, /<key>com\.apple\.security\.device\.audio-input<\/key>\s*<true\/>/u);
+    // macOS kills an app at launch when it claims a restricted entitlement without a profile.
+    assert.notMatch(
+      entitlements,
+      /com\.apple\.(developer|application-identifier)|keychain-access-groups/u,
+    );
   });
 
   it("grants in-app browser passkey entitlements only when the provisioning profile does", () => {
