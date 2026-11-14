@@ -559,6 +559,7 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
         ? ""
         : reference.label,
     ).trim() === "";
+  const textBubble = !folded && !mediaOnly && !fileCardsOnly && !audioOnly;
   const annotationRecordIds = resolvedContext.records
     .filter((record) => record.kind === "preview-annotation")
     .map((record) => record.contextId);
@@ -886,10 +887,10 @@ function UserTimelineRow({ row }: { row: Extract<TimelineRow, { kind: "message" 
           userMessage.attribution === "guest"
             ? guestBubbleClassName(false)
             : !mediaOnly && !fileCardsOnly && !audioOnly && "bg-message",
-          !folded && !mediaOnly && !fileCardsOnly && !audioOnly && "p-3",
+          textBubble && "p-3",
           folded && expanded && "w-full",
         )}
-        data-user-message-bubble=""
+        data-user-message-bubble={textBubble ? "text" : ""}
       >
         {/* Outside the fold so a collapsed message still has a heading to navigate to. */}
         {mediaAboveText ? null : (

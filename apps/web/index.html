@@ -121,6 +121,20 @@
               chrome: "oklch(0.225975 0.031062 293.741)",
             },
           },
+          knight: {
+            dark: {
+              background: "oklch(0.222129 0 0)",
+              foreground: "oklch(1 0 0)",
+              accent: "oklch(1 0 0)",
+              chrome: "oklch(0.114918 0 0)",
+            },
+            light: {
+              background: "oklch(0.991069 0 0)",
+              foreground: "oklch(0.191251 0 0)",
+              accent: "oklch(0.191251 0 0)",
+              chrome: "oklch(0.930999 0 0)",
+            },
+          },
         };
         const BUILT_IN_THEME_MODES = Object.fromEntries(
           Object.entries(BUILT_IN_THEME_PALETTES).map(([id, palettes]) => [
@@ -137,6 +151,7 @@
           "ocean",
           "ember",
           "iris",
+          "knight",
           "t3-chat-dark",
           "t3-grove",
           "t3-ocean",
@@ -242,7 +257,10 @@
             themeModes !== null;
           const theme = isKnownTheme && storedTheme ? storedTheme : "system";
           const isThemed = isKnownTheme && themeModes !== null;
-          const baseAppearance = customTheme ? customTheme.appearance : "light";
+          // A built-in's first palette is its base appearance, as `appearance` is at runtime.
+          const baseAppearance = customTheme
+            ? customTheme.appearance
+            : (BUILT_IN_THEME_MODES[themeId]?.[0] ?? "light");
           const systemMode = prefersDark ? "dark" : "light";
           const storedAppearanceMode = window.localStorage.getItem(
             THEME_APPEARANCE_MODE_STORAGE_KEY,
@@ -685,6 +703,41 @@
         </div>
       </div>
     </div>
+    <!-- Paint servers for theme CSS: `stroke: url(#theme-icon-gradient)` shades an icon from
+         --theme-icon-gradient-top to -bottom. userSpaceOnUse spans the 24px icon grid, because a
+         straight stroke has a zero-width bounding box and would lose an objectBoundingBox gradient. -->
+    <svg width="0" height="0" aria-hidden="true" style="position: absolute">
+      <defs>
+        <linearGradient
+          id="theme-icon-gradient"
+          gradientUnits="userSpaceOnUse"
+          x1="0"
+          y1="2"
+          x2="0"
+          y2="22"
+        >
+          <stop offset="0" style="stop-color: var(--theme-icon-gradient-top, currentColor)" />
+          <stop offset="1" style="stop-color: var(--theme-icon-gradient-bottom, currentColor)" />
+        </linearGradient>
+        <linearGradient
+          id="theme-icon-gradient-strong"
+          gradientUnits="userSpaceOnUse"
+          x1="0"
+          y1="2"
+          x2="0"
+          y2="22"
+        >
+          <stop
+            offset="0"
+            style="stop-color: var(--theme-icon-gradient-strong-top, currentColor)"
+          />
+          <stop
+            offset="1"
+            style="stop-color: var(--theme-icon-gradient-strong-bottom, currentColor)"
+          />
+        </linearGradient>
+      </defs>
+    </svg>
     <script type="module" src="/src/bootstrap.ts"></script>
   </body>
 </html>

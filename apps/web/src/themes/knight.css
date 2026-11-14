@@ -1,0 +1,325 @@
+/* Knight's materials; its colors live in packages/shared/src/themePalettes.ts.
+   One overhead light: raised parts catch it on the top edge, sunk parts on the lip.
+   Unlayered on purpose, so it outranks the utilities without !important. */
+
+html[data-theme-id="knight"] {
+  --font-sans:
+    "Manrope Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --surface-grain: none;
+  font-feature-settings: "tnum" 1;
+
+  --kn-ease: cubic-bezier(0.22, 0.8, 0.26, 1);
+  --kn-seam: rgb(0 0 0 / 0.1);
+  --kn-panel-rim: inset 0 1px 0 #ffffff, inset 0 0 0 1px rgb(0 0 0 / 0.07);
+  --kn-track-fill: linear-gradient(#dedede, #eeeeee);
+  --kn-track-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.2), inset 0 0 0 1px rgb(0 0 0 / 0.05), 0 1px 0 #ffffff;
+  --kn-knob-fill: linear-gradient(#ffffff, #f3f3f3);
+  --kn-knob-rim: linear-gradient(#ffffff, #fbfbfb 30%, #e4e4e4 70%, #d4d4d4);
+  --kn-knob-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.2), 0 1px 1px rgb(0 0 0 / 0.14), 0 3px 7px rgb(0 0 0 / 0.14);
+  --kn-knob-hover: 0.975;
+  --kn-knob-press: 0.94;
+  /* On white a white button cannot lead, so the main action turns graphite. */
+  --kn-cta-fill: linear-gradient(#3b3b3b, #1d1d1d);
+  --kn-cta-rim: linear-gradient(#8e8e8e, #4d4d4d 22%, #232323 58%, #1a1a1a);
+  --kn-cta-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.6), 0 1px 2px rgb(0 0 0 / 0.3), 0 5px 12px rgb(0 0 0 / 0.22);
+  --kn-cta-hover: 1.35;
+  --kn-cta-press: 0.9;
+  --kn-tile-fill: linear-gradient(#ffffff, #f2f2f2);
+  --kn-tile-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.07), inset 0 1px 0 #ffffff, 0 1px 2px rgb(0 0 0 / 0.1);
+  --kn-line-fill: #ffffff;
+  --kn-line-fill-hover: #f3f3f3;
+  --kn-line-edge: #d2d2d2;
+  --kn-key-fill: linear-gradient(#ffffff, #efefef);
+  --kn-key-shadow: inset 0 1px 0 #ffffff, 0 0 0 1px rgb(0 0 0 / 0.14), 0 1px 1px rgb(0 0 0 / 0.14);
+  --kn-pop-fill: #fbfbfb;
+  --kn-pop-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.07), inset 0 1px 0 #ffffff, 0 30px 70px rgb(0 0 0 / 0.22),
+    0 4px 12px rgb(0 0 0 / 0.08);
+  --kn-groove-dark: rgb(0 0 0 / 0.11);
+  --kn-groove-lit: rgb(255 255 255 / 0.95);
+  --kn-code-chip: rgb(0 0 0 / 0.06);
+  --theme-icon-gradient-top: #8a8a8a;
+  --theme-icon-gradient-bottom: #4f4f4f;
+  --theme-icon-gradient-strong-top: #4a4a4a;
+  --theme-icon-gradient-strong-bottom: #0d0d0d;
+
+  @variant dark {
+    --kn-seam: rgb(0 0 0 / 0.7);
+    --kn-panel-rim: inset 0 1px 0 rgb(255 255 255 / 0.09), inset 0 0 0 1px rgb(255 255 255 / 0.035);
+    --kn-track-fill: linear-gradient(#0c0c0c, #1a1a1a);
+    --kn-track-shadow:
+      inset 0 2px 3px rgb(0 0 0 / 0.75), 0 1px 0 #2c2c2c, 0 8px 16px -2px rgb(255 255 255 / 0.04);
+    --kn-knob-fill: linear-gradient(#383838, #232323);
+    --kn-knob-rim: linear-gradient(#a6a6a6, #5a5a5a 22%, #2c2c2c 58%, #323232);
+    --kn-knob-shadow: 0 0 0 2px #0d0d0d, 0 3px 7px rgb(0 0 0 / 0.55);
+    --kn-knob-hover: 1.12;
+    --kn-knob-press: 0.96;
+    --kn-cta-fill: var(--kn-knob-fill);
+    --kn-cta-rim: var(--kn-knob-rim);
+    --kn-cta-shadow: var(--kn-knob-shadow);
+    --kn-cta-hover: 1.12;
+    --kn-cta-press: 0.96;
+    --kn-tile-fill: linear-gradient(#2e2e2e, #222222);
+    --kn-tile-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.05), inset 0 1px 0 rgb(255 255 255 / 0.12),
+      0 2px 4px rgb(0 0 0 / 0.4);
+    --kn-line-fill: #1f1f1f;
+    --kn-line-fill-hover: #262626;
+    --kn-line-edge: #3a3a3a;
+    --kn-key-fill: linear-gradient(#2f2f2f, #232323);
+    --kn-key-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.13), 0 0 0 1px rgb(0 0 0 / 0.75), 0 1px 1px rgb(0 0 0 / 0.5);
+    --kn-pop-fill: #1e1e1e;
+    --kn-pop-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 30px 70px rgb(0 0 0 / 0.7);
+    --kn-groove-dark: rgb(0 0 0 / 0.8);
+    --kn-groove-lit: rgb(255 255 255 / 0.06);
+    --kn-code-chip: rgb(255 255 255 / 0.08);
+    --theme-icon-gradient-top: #b8b8b8;
+    --theme-icon-gradient-bottom: #6a6a6a;
+    --theme-icon-gradient-strong-top: #ffffff;
+    --theme-icon-gradient-strong-bottom: #a8a8a8;
+  }
+}
+
+/* The workspace is a rounded sheet seated in the black frame, its rim a separate
+   layer so it stays put while the content scrolls under it. */
+@media (width >= 48rem) {
+  html[data-theme-id="knight"] main[data-slot="sidebar-inset"] {
+    height: calc(100dvh - 16px);
+    margin: 8px 8px 8px 0;
+    border-radius: 18px;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      border-radius: inherit;
+      box-shadow: var(--kn-panel-rim);
+      pointer-events: none;
+    }
+  }
+
+  html[data-theme-id="knight"] [data-sidebar-state="collapsed"] > main[data-slot="sidebar-inset"] {
+    margin-left: 8px;
+  }
+
+  /* These controls sit on the window, not the sheet, so they follow the frame's inset. */
+  html[data-theme-id="knight"] [data-workspace-titlebar-controls="window"] {
+    translate: -8px 8px;
+  }
+
+  html[data-theme-id="knight"]:has([data-sidebar-state="collapsed"]) [data-sidebar-control] {
+    translate: 8px 8px;
+  }
+}
+
+/* Raised like the site's chips, and wider than tall so a one-word message reads as a
+   pill, not a blob. --radius drives both the 2xl corners and the grouped md corners. */
+html[data-theme-id="knight"] [data-user-message-bubble="text"] {
+  --radius: 11px;
+  padding: 9px 15px;
+  background: var(--kn-tile-fill);
+  box-shadow: var(--kn-tile-shadow);
+}
+
+html[data-theme-id="knight"] [data-chat-header] {
+  box-shadow: inset 0 -1px 0 var(--kn-seam);
+}
+
+/* Sidebar: quiet rows, and the open one raised as a tile. */
+html[data-theme-id="knight"] [data-sidebar-row] {
+  border-radius: 10px;
+}
+
+html[data-theme-id="knight"] [data-slot="sidebar-menu-button"] {
+  border-radius: 10px;
+}
+
+html[data-theme-id="knight"]
+  :is(
+    [data-sidebar-row][aria-current="page"],
+    [data-slot="sidebar-menu-button"][data-active="true"]
+  ) {
+  background: var(--kn-tile-fill);
+  box-shadow: var(--kn-tile-shadow);
+}
+
+html[data-theme-id="knight"] [data-slot="sidebar"] :has(> [data-slot="input-control"]) {
+  border-radius: 11px;
+  background: var(--kn-track-fill);
+  box-shadow: var(--kn-track-shadow);
+}
+
+/* The composer is sunk into the sheet like the site's search bar. */
+html[data-theme-id="knight"] [data-slot="composer-host"] {
+  --chat-composer-outline: transparent;
+  --chat-composer-highlight: transparent;
+  border-radius: 20px;
+  background: var(--kn-track-fill);
+  box-shadow: var(--kn-track-shadow);
+}
+
+html[data-theme-id="knight"] [data-composer-send]:enabled {
+  border: 1.5px solid transparent;
+  color: var(--color-foreground);
+  background:
+    var(--kn-knob-fill) padding-box,
+    var(--kn-knob-rim) border-box;
+  box-shadow: var(--kn-knob-shadow);
+  transition:
+    filter 120ms linear,
+    transform 90ms var(--kn-ease);
+
+  &:hover {
+    scale: none;
+    filter: brightness(var(--kn-knob-hover));
+  }
+
+  &:active {
+    transform: translateY(1px);
+    filter: brightness(var(--kn-knob-press));
+  }
+}
+
+/* Buttons: the main action is a seated knob, the rest are lines and tiles. */
+html[data-theme-id="knight"] [data-slot="button"][data-variant="default"] {
+  border: 1.5px solid transparent;
+  color: #ffffff;
+  background:
+    var(--kn-cta-fill) padding-box,
+    var(--kn-cta-rim) border-box;
+  box-shadow: var(--kn-cta-shadow);
+  transition:
+    filter 120ms linear,
+    transform 90ms var(--kn-ease);
+
+  &:hover,
+  &[data-pressed] {
+    background:
+      var(--kn-cta-fill) padding-box,
+      var(--kn-cta-rim) border-box;
+    filter: brightness(var(--kn-cta-hover));
+  }
+
+  &:active {
+    scale: none;
+    transform: translateY(1px);
+    filter: brightness(var(--kn-cta-press));
+  }
+}
+
+html[data-theme-id="knight"]
+  [data-slot="button"]:is([data-variant="outline"], [data-variant="destructive-outline"]) {
+  border-color: transparent;
+  background: var(--kn-line-fill);
+  box-shadow: inset 0 0 0 1px var(--kn-line-edge);
+
+  &::before {
+    box-shadow: none;
+  }
+
+  &:hover,
+  &[data-pressed] {
+    background: var(--kn-line-fill-hover);
+  }
+}
+
+html[data-theme-id="knight"] [data-slot="button"][data-variant="secondary"] {
+  background: var(--kn-tile-fill);
+  box-shadow: var(--kn-tile-shadow);
+}
+
+/* Floating surfaces are opaque and lit from above. */
+html[data-theme-id="knight"]
+  :is(
+    [data-slot="menu-popup"],
+    [data-slot="popover-popup"],
+    [data-slot="dialog-popup"],
+    [data-thread-details-card]
+  ) {
+  border-color: transparent;
+  background: var(--kn-pop-fill);
+  box-shadow: var(--kn-pop-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Docked on the sheet rather than floating, so it keeps the rim but drops the cast shadow. */
+html[data-theme-id="knight"] [data-thread-details-card] {
+  box-shadow: var(--kn-tile-shadow);
+}
+
+/* The shared contrast color carries a faint hue; Knight's greys have none. */
+html[data-theme-id="knight"] .chat-markdown :not(pre) > code {
+  background: var(--kn-code-chip);
+}
+
+html[data-theme-id="knight"] [data-slot="kbd"] {
+  border-radius: 5px;
+  color: var(--color-muted-foreground);
+  background: var(--kn-key-fill);
+  box-shadow: var(--kn-key-shadow);
+}
+
+html[data-theme-id="knight"] [data-slot="switch"] {
+  background: var(--kn-track-fill);
+  box-shadow: var(--kn-track-shadow);
+
+  & [data-slot="switch-thumb"] {
+    border: 1px solid transparent;
+    background:
+      var(--kn-knob-fill) padding-box,
+      var(--kn-knob-rim) border-box;
+    box-shadow:
+      0 0 0 1px var(--kn-groove-dark),
+      0 1px 2px rgb(0 0 0 / 0.3);
+  }
+
+  /* On is lit: the track takes the ink color so the state reads at a glance. */
+  &[data-checked] {
+    background: var(--color-foreground);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.25);
+  }
+}
+
+html[data-theme-id="knight"] [data-slot="separator"] {
+  background: linear-gradient(var(--kn-groove-dark) 0 1px, var(--kn-groove-lit) 1px 2px);
+}
+
+/* Neutral icons read as cut metal. Icons that carry a color class keep it. */
+html[data-theme-id="knight"]
+  :is(
+    [data-slot="sidebar"],
+    [data-chat-header],
+    [data-thread-details-card],
+    [data-chat-composer-form],
+    [data-slot="menu-popup"]
+  )
+  svg.lucide:not([class*="text-"]) {
+  stroke: url(#theme-icon-gradient);
+}
+
+html[data-theme-id="knight"]
+  :is(
+    [data-sidebar-row][aria-current="page"],
+    [data-sidebar-row]:hover,
+    [data-slot="button"]:hover,
+    [data-slot="button"][data-pressed],
+    [data-slot="menu-popup"] [data-highlighted]
+  )
+  svg.lucide:not([class*="text-"]) {
+  stroke: url(#theme-icon-gradient-strong);
+}
+
+html[data-theme-id="knight"] [data-slot="button"][data-variant="default"] svg.lucide,
+html[data-theme-id="knight"] [data-composer-send] svg.lucide {
+  stroke: currentColor;
+}

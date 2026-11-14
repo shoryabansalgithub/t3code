@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
+import { BUILT_IN_THEMES } from "@t3tools/shared/themePalettes";
 import indexHtml from "../index.html?raw";
 import {
   CUSTOM_THEMES_STORAGE_KEY,
@@ -9,10 +10,7 @@ import {
   isKnownThemePreference,
   resolveThemeAppearance,
   T3_CHAT_THEME,
-  EMBER_THEME,
   GROVE_THEME,
-  IRIS_THEME,
-  OCEAN_THEME,
   THEME_APPEARANCE_MODE_STORAGE_KEY,
   THEME_FOLLOW_SYSTEM_STORAGE_KEY,
   toCanonicalThemeColor,
@@ -187,6 +185,11 @@ describe("index.html boot script", () => {
       prefersDark: true,
     },
     {
+      name: "dark-first Knight stays dark on a light OS",
+      storage: { [THEME_STORAGE_KEY]: "knight" },
+      prefersDark: false,
+    },
+    {
       name: "a legacy t3-grove preference resolves through the alias",
       storage: { [THEME_STORAGE_KEY]: "t3-grove", [THEME_FOLLOW_SYSTEM_STORAGE_KEY]: "true" },
       prefersDark: true,
@@ -284,8 +287,7 @@ describe("index.html boot script", () => {
   });
 
   it("keeps every built-in boot splash in sync with the real palettes", () => {
-    for (const theme of [T3_CHAT_THEME, GROVE_THEME, OCEAN_THEME, EMBER_THEME, IRIS_THEME]) {
-      expect(theme.appearance).toBe("light");
+    for (const theme of BUILT_IN_THEMES) {
       for (const mode of ["light", "dark"] as const) {
         const colors = getThemeColorsForMode(theme, mode);
         expect(colors).not.toBeNull();
