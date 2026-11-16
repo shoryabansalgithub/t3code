@@ -43,6 +43,13 @@ html[data-theme-id="knight"] {
   --kn-groove-dark: rgb(0 0 0 / 0.11);
   --kn-groove-lit: rgb(255 255 255 / 0.95);
   --kn-code-chip: rgb(0 0 0 / 0.06);
+  --kn-well-fill: #f1f1f1;
+  --kn-well-glow: rgb(255 255 255 / 0.9);
+  --kn-well-dots: rgb(0 0 0 / 0.07);
+  --kn-card-fill: linear-gradient(#ffffff, #fbfbfb);
+  --kn-card-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.07), inset 0 1px 0 #ffffff, 0 1px 2px rgb(0 0 0 / 0.05),
+    0 12px 28px -18px rgb(0 0 0 / 0.18);
   --theme-icon-gradient-top: #8a8a8a;
   --theme-icon-gradient-bottom: #4f4f4f;
   --theme-icon-gradient-strong-top: #4a4a4a;
@@ -81,6 +88,13 @@ html[data-theme-id="knight"] {
     --kn-groove-dark: rgb(0 0 0 / 0.8);
     --kn-groove-lit: rgb(255 255 255 / 0.06);
     --kn-code-chip: rgb(255 255 255 / 0.08);
+    --kn-well-fill: #121212;
+    --kn-well-glow: rgb(255 255 255 / 0.05);
+    --kn-well-dots: rgb(255 255 255 / 0.06);
+    --kn-card-fill: linear-gradient(#1f1f1f, #191919);
+    --kn-card-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.075), inset 0 0 0 1px rgb(255 255 255 / 0.04),
+      0 0 0 1px rgb(0 0 0 / 0.55), 0 14px 30px -16px rgb(0 0 0 / 0.8);
     --theme-icon-gradient-top: #b8b8b8;
     --theme-icon-gradient-bottom: #6a6a6a;
     --theme-icon-gradient-strong-top: #ffffff;
@@ -353,6 +367,234 @@ html[data-theme-id="knight"] [data-pull-request-key] {
       inset 0 1px 0 rgb(255 255 255 / 0.22),
       0 1px 1px rgb(0 0 0 / 0.12);
   }
+}
+
+/* Usage: the page body is a dark well with a dot-matrix band under the header, and each
+   section is a machined card seated in it. Charts and meters fill with a dot screen
+   instead of a wash, so data reads as printed matter on metal. */
+html[data-theme-id="knight"] [data-usage-body] {
+  background:
+    radial-gradient(70% 240px at 50% 0, var(--kn-well-glow), transparent),
+    linear-gradient(transparent, var(--kn-well-fill) 280px),
+    radial-gradient(circle at 1px 1px, var(--kn-well-dots) 0.8px, transparent 1.3px) 0 0 / 6px 6px,
+    var(--kn-well-fill);
+}
+
+html[data-theme-id="knight"] :is([data-usage-overview], [data-usage-row]) {
+  gap: 12px;
+}
+
+html[data-theme-id="knight"]
+  :is([data-usage-overview] [data-usage-card], [data-usage-limits] > section) {
+  border: 0;
+  border-radius: 16px;
+  padding: 18px 20px 20px;
+  background: var(--kn-card-fill);
+  box-shadow: var(--kn-card-shadow);
+}
+
+/* Card titles are engraved captions, like the pull request group headers. */
+html[data-theme-id="knight"]
+  :is([data-usage-overview] [data-usage-card], [data-usage-limits] > section)
+  > :is(h2, h3),
+html[data-theme-id="knight"]
+  [data-usage-overview]
+  [data-usage-card]
+  > div:first-child
+  > :is(h2, h3) {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+@media (width >= 64rem) {
+  html[data-theme-id="knight"] [data-usage-row="hero"] {
+    grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+  }
+}
+
+/* The chart fills its card, so it stands as tall as the provider list beside it. */
+html[data-theme-id="knight"] [data-usage-card="chart"] [data-usage-chart] {
+  flex: 1;
+  min-height: 14rem;
+
+  & > :first-child {
+    flex: 1;
+
+    & > * {
+      height: auto;
+    }
+  }
+}
+
+html[data-theme-id="knight"] [data-usage-figure] {
+  letter-spacing: -0.03em;
+}
+
+/* Totals sit in one strip, divided by grooves rather than gaps. */
+@media (width >= 48rem) {
+  html[data-theme-id="knight"] [data-usage-metrics] {
+    column-gap: 0;
+
+    & > * {
+      padding-inline: 16px;
+    }
+
+    & > :first-child {
+      padding-inline-start: 0;
+    }
+
+    & > * + * {
+      background: linear-gradient(var(--kn-groove-dark), var(--kn-groove-dark)) 0 0 / 1px 100%
+        no-repeat;
+    }
+  }
+}
+
+html[data-theme-id="knight"] [data-usage-card="breakdown"] :is(tr, thead tr) {
+  border-color: color-mix(in oklab, var(--color-foreground) 6%, transparent);
+}
+
+html[data-theme-id="knight"] [data-usage-chart-fill] {
+  -webkit-mask-image:
+    radial-gradient(circle, #000 1px, transparent 1.45px), linear-gradient(#000, rgb(0 0 0 / 0.4));
+  mask-image:
+    radial-gradient(circle, #000 1px, transparent 1.45px), linear-gradient(#000, rgb(0 0 0 / 0.4));
+  -webkit-mask-size:
+    3.5px 3.5px,
+    100% 100%;
+  mask-size:
+    3.5px 3.5px,
+    100% 100%;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+
+  & path {
+    fill-opacity: 1;
+  }
+}
+
+html[data-theme-id="knight"] [data-usage-chart-line] {
+  stroke-width: 1.75px;
+}
+
+html[data-theme-id="knight"] :is([data-usage-chart-grid], [data-usage-chart-cursor]) {
+  stroke-dasharray: 2 4;
+}
+
+html[data-theme-id="knight"] [data-usage-chart-axis] {
+  letter-spacing: 0.08em;
+}
+
+html[data-theme-id="knight"] [data-usage-chart-tooltip] {
+  border-color: transparent;
+  background: var(--kn-pop-fill);
+  box-shadow: var(--kn-pop-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html[data-theme-id="knight"] [data-usage-share-track] > * {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
+}
+
+/* Activity cells: empty days are pits in the card, active days are key caps that brighten
+   with use, and the busiest glow faintly. */
+html[data-theme-id="knight"] [data-usage-card="activity"] {
+  --usage-activity-empty: #e6e6e6;
+
+  @variant dark {
+    --usage-activity-ink: #e8e8e8;
+    --usage-activity-empty: #232323;
+  }
+}
+
+html[data-theme-id="knight"] [data-usage-activity-cell] {
+  border-radius: 5px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 1px 1px rgb(0 0 0 / 0.18);
+
+  &[data-level="0"] {
+    box-shadow:
+      inset 0 1px 1.5px rgb(0 0 0 / 0.14),
+      0 1px 0 rgb(255 255 255 / 0.8);
+  }
+
+  &[data-today] {
+    outline: 1px solid color-mix(in oklab, var(--color-foreground) 55%, transparent);
+    outline-offset: 2px;
+  }
+
+  @variant dark {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.25),
+      0 1px 2px rgb(0 0 0 / 0.6);
+
+    &[data-level="0"] {
+      box-shadow:
+        inset 0 1px 2px rgb(0 0 0 / 0.7),
+        0 1px 0 rgb(255 255 255 / 0.035);
+    }
+
+    &[data-level="4"] {
+      box-shadow:
+        inset 0 1px 0 #ffffff,
+        0 1px 2px rgb(0 0 0 / 0.6),
+        0 0 12px -3px rgb(255 255 255 / 0.45);
+    }
+  }
+}
+
+/* Limits: one card per provider, its windows divided by grooves. */
+html[data-theme-id="knight"] [data-usage-limits] {
+  gap: 12px;
+}
+
+html[data-theme-id="knight"] [data-usage-limits] > section {
+  gap: 4px;
+}
+
+html[data-theme-id="knight"] [data-usage-limit-card] {
+  border: 0;
+  border-radius: 0;
+  padding: 14px 0 4px;
+
+  & + & {
+    margin-top: 10px;
+    background: linear-gradient(var(--kn-groove-dark) 0 1px, var(--kn-groove-lit) 1px 2px) 0 0 /
+      100% 2px no-repeat;
+    padding-top: 22px;
+  }
+}
+
+html[data-theme-id="knight"] [data-usage-limit-track] {
+  border-radius: 8px;
+  box-shadow: var(--kn-track-shadow);
+
+  & > div {
+    border-radius: inherit;
+  }
+}
+
+html[data-theme-id="knight"] [data-usage-limit-fill] {
+  opacity: 1;
+  -webkit-mask-image:
+    radial-gradient(circle, #000 0.9px, transparent 1.35px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.45), #000);
+  mask-image:
+    radial-gradient(circle, #000 0.9px, transparent 1.35px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.45), #000);
+  -webkit-mask-size:
+    4px 4px,
+    100% 100%;
+  mask-size:
+    4px 4px,
+    100% 100%;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
 }
 
 /* Neutral icons read as cut metal. Icons that carry a color class keep it. */

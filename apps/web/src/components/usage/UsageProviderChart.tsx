@@ -240,6 +240,7 @@ function UsageChartTooltip({
   return (
     <div
       ref={tooltipRef}
+      data-usage-chart-tooltip=""
       className="surface-glass pointer-events-none absolute z-10 min-w-36 max-w-full rounded-xl border border-border/50 px-2.5 py-2 text-xs shadow-lg"
       style={{
         left: "var(--usage-tooltip-left, 0px)",
@@ -289,6 +290,7 @@ function UsageChartPlot({
   format,
   formatTooltipPeriod,
   ariaLabel,
+  fill,
   children,
 }: {
   readonly periods: readonly string[];
@@ -299,6 +301,8 @@ function UsageChartPlot({
   readonly format: (value: number) => string;
   readonly formatTooltipPeriod: (period: string) => string;
   readonly ariaLabel: string;
+  /** Area fills, drawn on their own layer under the lines so a theme can texture them alone. */
+  readonly fill: React.ReactNode;
   readonly children: React.ReactNode;
 }) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -370,7 +374,16 @@ function UsageChartPlot({
       }}
     >
       <svg
-        className="h-full w-full"
+        aria-hidden
+        data-usage-chart-fill=""
+        className="absolute inset-0 h-full w-full"
+        viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
+        preserveAspectRatio="none"
+      >
+        {fill}
+      </svg>
+      <svg
+        className="relative h-full w-full"
         viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
         preserveAspectRatio="none"
         role="img"
@@ -385,6 +398,7 @@ function UsageChartPlot({
             y2={VIEW_HEIGHT}
             stroke="currentColor"
             strokeWidth={1}
+            data-usage-chart-cursor=""
             className="text-muted-foreground"
             vectorEffect="non-scaling-stroke"
           />
@@ -443,7 +457,7 @@ export function UsageProviderChart({
       : formatPeriod(period);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div data-usage-chart="" className="flex flex-col gap-1">
       <div className="flex gap-2">
         <div className="relative h-56 w-14 shrink-0">
           {scale.labeled
@@ -468,6 +482,15 @@ export function UsageProviderChart({
           format={format}
           formatTooltipPeriod={formatTooltipPeriod}
           ariaLabel={`${resolution === "hour" ? "Hourly" : "Daily"} ${metric === "tokens" ? "processed tokens" : "cost"} by provider`}
+          fill={paths.map(({ provider, loading, area }) => (
+            <path
+              key={provider}
+              d={area}
+              className={seriesClassName(loading)}
+              fill={PROVIDER_PRESENTATION[provider].color}
+              fillOpacity={0.12}
+            />
+          ))}
         >
           {scale.ticks.map((tick) => {
             const y = toY(tick);
@@ -480,27 +503,20 @@ export function UsageProviderChart({
                 y2={y}
                 stroke="currentColor"
                 strokeWidth={1}
+                data-usage-chart-grid=""
                 className="text-border"
                 vectorEffect="non-scaling-stroke"
               />
             );
           })}
 
-          {paths.map(({ provider, loading, area }) => (
-            <path
-              key={provider}
-              d={area}
-              className={seriesClassName(loading)}
-              fill={PROVIDER_PRESENTATION[provider].color}
-              fillOpacity={0.12}
-            />
-          ))}
           {paths.map(({ provider, loading, line }) => (
             <path
               key={provider}
               d={line}
               className={seriesClassName(loading)}
               fill="none"
+              data-usage-chart-line=""
               stroke={PROVIDER_PRESENTATION[provider].color}
               strokeWidth={2}
               vectorEffect="non-scaling-stroke"
@@ -509,7 +525,10 @@ export function UsageProviderChart({
         </UsageChartPlot>
       </div>
 
-      <div className="flex justify-between pl-16 text-3xs text-muted-foreground uppercase">
+      <div
+        data-usage-chart-axis=""
+        className="flex justify-between pl-16 text-3xs text-muted-foreground uppercase"
+      >
         <span>{periods[0] === undefined ? "" : formatPeriod(periods[0])}</span>
         <span>
           {periods[Math.floor(periods.length / 2)] === undefined

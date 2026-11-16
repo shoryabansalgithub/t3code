@@ -82,6 +82,7 @@ import { UsagePriceOverrides } from "./UsagePriceOverrides";
 import { UsageProviderChart } from "./UsageProviderChart";
 import { SpeedPremium, UsageModelDialog } from "./UsageModelDialog";
 import { UsageShareBar } from "./UsageShareBar";
+import { UsageActivityHeatmap } from "./UsageActivityHeatmap";
 import {
   costTypeSegments,
   modelShare,
@@ -508,7 +509,7 @@ export function UsagePage() {
           <AppRouteModalClose />
         </header>
 
-        <ScrollArea className="min-h-0 flex-1">
+        <ScrollArea data-usage-body="" className="min-h-0 flex-1">
           <WorkspacePageContainer width="wide">
             {selectedEnvironments.length === 0 ? (
               <p className="text-sm text-muted-foreground">
@@ -649,16 +650,20 @@ function UsageOverview({
   const rankedProviders = rankProvidersByMetric(activeProviders, merged.providers, metric);
 
   return (
-    <div aria-busy={loadingPartial} className="flex flex-col gap-6">
+    <div aria-busy={loadingPartial} data-usage-overview="" className="flex flex-col gap-6">
       {sourceMessages.map((message) => (
         <p key={message} className="mb-4 text-sm text-muted-foreground">
           {message}
         </p>
       ))}
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-        <div className="flex min-w-0 flex-col gap-5">
+      <section
+        data-usage-row="hero"
+        className="grid gap-6 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]"
+      >
+        <div data-usage-card="summary" className="flex min-w-0 flex-col gap-5">
           <div className="flex flex-col gap-1">
             <span
+              data-usage-figure=""
               className={cn(
                 "text-4xl font-semibold text-foreground tabular-nums",
                 figureClass(loadingPartial),
@@ -761,7 +766,7 @@ function UsageOverview({
           })}
         </div>
 
-        <div className="flex min-w-0 flex-col gap-3">
+        <div data-usage-card="chart" className="flex min-w-0 flex-col gap-3">
           <h2 className="text-sm font-medium text-foreground">
             {shownHourly ? "Hourly" : "Daily"} {metric === "tokens" ? "processed tokens" : "cost"}
           </h2>
@@ -781,9 +786,9 @@ function UsageOverview({
         </div>
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section data-usage-card="totals" className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-foreground">Totals</h2>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 py-1 md:grid-cols-5">
+        <div data-usage-metrics="" className="grid grid-cols-2 gap-x-6 gap-y-4 py-1 md:grid-cols-5">
           <Metric
             loading={loadingPartial}
             label="Processed tokens"
@@ -814,8 +819,12 @@ function UsageOverview({
 
       {merged.totalTokens > 0 ? (
         <section
+          data-usage-row="detail"
           className={cn("grid gap-x-12 gap-y-8 lg:grid-cols-2", figureClass(loadingPartial))}
         >
+          {shownHourly ? null : (
+            <UsageActivityHeatmap days={days} daily={merged.daily} metric={metric} />
+          )}
           {metric === "tokens" ? (
             <UsageShareBar
               label="Tokens by type"
@@ -842,7 +851,7 @@ function UsageOverview({
         </section>
       ) : null}
 
-      <section className="flex flex-col gap-3">
+      <section data-usage-card="breakdown" className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-medium text-foreground">Breakdown</h2>
           <ToggleGroup

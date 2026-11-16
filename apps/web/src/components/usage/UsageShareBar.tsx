@@ -25,7 +25,7 @@ export function UsageShareBar({
   if (total <= 0) return null;
 
   return (
-    <div className="flex min-w-0 flex-col gap-2.5">
+    <div data-usage-card="share" className="flex min-w-0 flex-col gap-2.5">
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="text-sm font-medium text-foreground">{label}</h3>
         {aside}
@@ -33,6 +33,7 @@ export function UsageShareBar({
       <div
         role="img"
         aria-label={`${label}: ${visible.map((segment) => `${segment.label} ${format(segment.value)}`).join(", ")}`}
+        data-usage-share-track=""
         className="flex h-2 gap-0.5"
       >
         {visible.map((segment) => (
