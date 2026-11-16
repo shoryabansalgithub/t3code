@@ -125,9 +125,14 @@ html[data-theme-id="knight"] {
    pill, not a blob. --radius drives both the 2xl corners and the grouped md corners. */
 html[data-theme-id="knight"] [data-user-message-bubble="text"] {
   --radius: 11px;
-  padding: 9px 15px;
+  /* Optical centre: lowercase text sits on its x-height, so 1px more below. */
+  padding: 8px 15px 10px;
   background: var(--kn-tile-fill);
   box-shadow: var(--kn-tile-shadow);
+}
+/* The app tightens a corner where the bubble meets media or a grouped message; on a raised tile that reads as a chipped corner, so keep all four round. */
+html[data-theme-id="knight"] [data-user-message-bubble]:is(.rounded-tr-md, .rounded-br-md) {
+  border-radius: var(--radius-2xl);
 }
 
 html[data-theme-id="knight"] [data-chat-header] {
@@ -294,6 +299,62 @@ html[data-theme-id="knight"] [data-slot="separator"] {
   background: linear-gradient(var(--kn-groove-dark) 0 1px, var(--kn-groove-lit) 1px 2px);
 }
 
+/* Pull requests: the search is sunk into the sheet like the composer, group headers are
+   engraved captions, and the open pull request is raised as a tile like the open thread. */
+html[data-theme-id="knight"] [data-workspace-area="pull-requests"] [data-slot="input-group"] {
+  border-color: transparent;
+  border-radius: 11px;
+  background: var(--kn-track-fill);
+  box-shadow: var(--kn-track-shadow);
+
+  &:focus-within {
+    box-shadow:
+      var(--kn-track-shadow),
+      0 0 0 2px color-mix(in oklab, var(--color-ring) 16%, transparent);
+  }
+}
+
+html[data-theme-id="knight"]
+  [data-workspace-area="pull-requests"]
+  div:has(> h2):has(> [data-slot="separator"]) {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  & > span {
+    font-family: var(--font-mono);
+    letter-spacing: 0;
+  }
+}
+
+html[data-theme-id="knight"] [data-pull-request-key] {
+  border-radius: 10px;
+  transition:
+    background-color 120ms linear,
+    box-shadow 120ms linear;
+
+  &:hover {
+    background: color-mix(in oklab, var(--color-foreground) 4%, transparent);
+  }
+
+  &:has(> button[aria-current="true"]) {
+    background: var(--kn-tile-fill);
+    box-shadow: var(--kn-tile-shadow);
+  }
+
+  & > button {
+    border-radius: inherit;
+  }
+
+  /* Labels keep their own color but sit on the row like small key caps. */
+  & [data-slot="badge"] {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.22),
+      0 1px 1px rgb(0 0 0 / 0.12);
+  }
+}
+
 /* Neutral icons read as cut metal. Icons that carry a color class keep it. */
 html[data-theme-id="knight"]
   :is(
@@ -301,7 +362,8 @@ html[data-theme-id="knight"]
     [data-chat-header],
     [data-thread-details-card],
     [data-chat-composer-form],
-    [data-slot="menu-popup"]
+    [data-slot="menu-popup"],
+    [data-workspace-area="pull-requests"]
   )
   svg.lucide:not([class*="text-"]) {
   stroke: url(#theme-icon-gradient);
@@ -311,6 +373,8 @@ html[data-theme-id="knight"]
   :is(
     [data-sidebar-row][aria-current="page"],
     [data-sidebar-row]:hover,
+    [data-pull-request-key]:hover,
+    [data-pull-request-key]:has(> button[aria-current="true"]),
     [data-slot="button"]:hover,
     [data-slot="button"][data-pressed],
     [data-slot="menu-popup"] [data-highlighted]
